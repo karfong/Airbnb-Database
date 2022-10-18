@@ -1,0 +1,49 @@
+/*list out all the room with wifi that is below RM200 for october*/
+
+SELECT room. , room_price. ,host.* FROM 
+room_price 
+INNER JOIN room ON room_price.room_id=room.id 
+JOIN HOST ON room.host_id = host.id
+WHERE room_price.price < 200 AND room_price.start_date >= "2022-10-01 00:00:00" AND room_price.end_date <= "2022-10-31 23:59:59" 
+ORDER BY room_price.room_id, room_price.start_date DESC;
+
+
+
+/*list out all the checkout list that is ending between 10-16 of all the room belong to the host*/
+
+SELECT host.name,room_price.room_id,room.room_no,room.floor,room_price.price, payment.customer_id, payment.start_datetime,payment.end_datetime 
+FROM room INNER JOIN payment ON room.id= payment.room_id 
+INNER JOIN HOST ON ROOM.host_id=HOST.id
+INNER JOIN room_price ON room.id = room_price.room_id
+WHERE payment.end_datetime BETWEEN "2022-10-10 00:00:00" AND "2022-10-16 23:59:59"
+AND host.id=10 AND payment.has_completed=1;
+
+
+
+/*find a list of customer that made RM1000 purchase for october 2022*/
+SELECT booking.customer_id,SUM(pymt.price) AS total FROM 
+        payment AS pymt 
+        JOIN booking ON pymt.id = booking.payment_id 
+        WHERE booking.booking_datetime BETWEEN "2022-10-01 00:00:00" AND "2022-10-31 00:00:00" 
+        GROUP BY booking.customer_id 
+        HAVING total <=500 
+
+ 
+/*display a full detail of the room that is helpful to a customer*/
+
+SELECT room.*,room_price.*,host.name,booking.booking_datetime FROM
+room
+INNER JOIN room_price ON room.id = room_price.room_id
+INNER JOIN booking ON room.id=booking.room_id
+JOIN HOST ON room.host_id = host.id
+ORDER BY host.name DESC;
+   
+
+
+/*list out of the profits made by host for october 2022 sort by descending*/
+SELECT booking.host_id, SUM(payment.price) AS price ,payment.currency,payment.end_datetime,booking.room_id 
+        FROM booking 
+        JOIN payment ON booking.payment_id = payment.id
+        WHERE booking.has_completed=1 AND booking.booking_datetime BETWEEN "2022-10-01 00:00:00" AND "2022-10-31 00:00:00"
+        GROUP BY booking.host_id 
+        ORDER BY booking.host_id DESC ,payment.price DESC
